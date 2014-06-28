@@ -13,7 +13,7 @@ open FILE, ">primesEveryWhere.txt";
 for (my $i = 0; $i < 2000000; $i++)
 {
    print FILE "$number\n";
-   $number = findNextPrime($candidate);
+   $number = findNextPrime($number);
 }
 close(FILE);
 
@@ -52,8 +52,8 @@ sub findNextPrime
 
    # Use the conjecture of Firoozbakht to find the gap boundary, between the
    # current prime and the next prime.
-   my $lnCurrCand = log($currCandidate) ;
-   my $gapBoundary = $lnCurrCand**2 - $lnCurrCand;
+   my $lnCurrPrime = log($currPrime) ;
+   my $gapBoundary = floor($lnCurrPrime**2 - $lnCurrPrime);
    
    my $candidate = $currPrime + $gapBoundary;
    while ( not isPrime($candidate) )
