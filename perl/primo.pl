@@ -21,20 +21,33 @@ close(FILE);
 sub isPrime
 {
    my $n = shift;
-
-   my $index = 0;
-   my $factor = 1;
-   my $factorLimit = floor( sqrt($n) );
-   while ($factor <= $factorLimit)
+   
+   my $factor = floor( sqrt($n) );
+   for (; $factor > 1; $factor = previousFactor($factor))
    {
-      $factor = $primes[$index++];
       if ($n % $factor == 0)
       {
          return 0;
       }
    }
+
    push @primes, $n;
    return 1;
+}
+
+sub previousFactor 
+{
+   # Given a number (pivot), the function will return the next closest prime
+   # number to the pivot, so that is less or equal to the pivot. 
+   # When is not possible to find a candidate, the function will return 0
+   my $pivot = shift;
+
+   # Special cases
+   return 0 if ( $pivot == 2 );
+
+   my @candidateFactors = map { $primes[$_] } grep { $primes[$_] < $pivot } 0..$#primes;
+   
+   return $candidateFactors[-1];
 }
 
 sub findNextPrime
