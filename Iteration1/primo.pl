@@ -38,16 +38,16 @@ sub isPrime
    return 1;
 }
 
-my @preCached = (2, 3, 5, 7, 11)
 sub findNextPrime
 {
    my $currPrime = shift;
+   my @p_n = (1, 2, 3, 5, 7, 11);
 
-   if (@preCached)
+   # The conjecture works for p_n where n is greater than 4
+   if ( $currPrime <= $p_n[4] )
    {
-      # The conjecture works for p_n where n is greater than 4, that's why I'll
-      # start with 11. 
-      return shift @preCached;
+      my( $index )= grep { $p_n[$_] eq $currPrime } 0..$#p_n;
+      return $p_n[$index + 1];
    }
 
    # Use the conjecture of Firoozbakht to find the gap boundary, between the
