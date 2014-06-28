@@ -7,7 +7,7 @@
 use strict;
 use POSIX;
 
-my @primes = (2, 3, 5, 7, 11);
+my @primes = (2);
 my $number = $primes[0]; 
 open FILE, ">primesEveryWhere.txt";
 for (my $i = 0; $i < 2000000; $i++)
@@ -27,21 +27,14 @@ sub isPrime
    my $factorLimit = floor( sqrt($n) );
    while ($factor <= $factorLimit)
    {
-      $factor = $primes[$index];
+      $factor = $primes[$index++];
       if ($n % $factor == 0)
       {
          return 0;
       }
-      $index ++;
    }
    push @primes, $n;
    return 1;
-}
-
-sub nextFactor
-{
-   my $n = shift;
-   return $n + 2;
 }
 
 sub findNextPrime
