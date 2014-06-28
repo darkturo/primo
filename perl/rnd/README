@@ -1,0 +1,11 @@
+With this oneliner, I calculated all the gaps that ar present in the list of
+the first 2 million numbers (according) to the reference.
+
+   perl -pe 'BEGIN { $p = 0; } $q = $_; $_ = $q - $p . "\n"; $p = $q' primeNumberReferenceList.txt 
+
+Then I sorted it, and put it into the file "sorted.txt". From there, what I did
+is to print the number of occurrences of the different gaps and sort it into a
+table "voraz.txt", where I know with a certain number of probability which gaps
+are the ones to take. I expect to improve the performance of the algorithm a
+bit.
+
