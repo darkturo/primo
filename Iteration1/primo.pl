@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 #
-# Find the first 2,000,000 prime numbers using Eratosthenes Sieve, and the
-# conjecture of Firoozbakht to find subsequent numbers (instead of just adding
-# one to each candidate).
+# Find the first 2,000,000 prime numbers. 
+# To test the primality I'm using Eratosthenes Sieve.
 # 
 # darkturo 2014.
 use strict;
@@ -41,24 +40,15 @@ sub isPrime
 sub findNextPrime
 {
    my $currPrime = shift;
-   my @p_n = (1, 2, 3, 5, 7, 11);
+   my @primeGapTable = (1, 2, 4, 6, 8, 14, 18, 20, 22, 34, 36, 44, 52, 
+                        72, 86, 96, 112, 114, 118, 132, 148, 154, 180, 
+                        210, 220);
+   my $index = 0;
 
-   # The conjecture works for p_n where n is greater than 4
-   if ( $currPrime <= $p_n[4] )
-   {
-      my( $index )= grep { $p_n[$_] eq $currPrime } 0..$#p_n;
-      return $p_n[$index + 1];
-   }
+   my $candidate = 0;
+   do {
+      $candidate = $currPrime + $primeGapTable[$index];
+   } while ( not isPrime($candidate) );
 
-   # Use the conjecture of Firoozbakht to find the gap boundary, between the
-   # current prime and the next prime.
-   my $lnCurrPrime = log($currPrime) ;
-   my $gapBoundary = floor($lnCurrPrime**2 - $lnCurrPrime);
-   
-   my $candidate = $currPrime + $gapBoundary;
-   while ( not isPrime($candidate) )
-   {
-      $candidate--;
-   }
    return $candidate;
 }
