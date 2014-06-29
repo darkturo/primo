@@ -8,6 +8,7 @@ use POSIX;
 use threads;
 use threads::shared;
 use Thread::Queue;
+use Time::HiRes;
 use List::Util qw(first);
 
 no strict 'subs';
@@ -15,9 +16,10 @@ my $primesFound :shared;
 
 # Tweak some details. These are for my current machine
 my $CPU = 4;
-my $numOfPrimeTesters = $CPU * 10;
-my $numOfSorters = $CPU * 8; 
+my $numOfPrimeTesters = $CPU * 128;
+my $numOfSorters = $CPU; 
 my $PrimesToFind = 2000000;
+my $MaxCandidate = 32500000;
 
 # Queues
 my $primeTestersQueue = Thread::Queue->new();
@@ -36,7 +38,7 @@ for (my $i; $i < $numOfPrimeTesters; $i++)
 
 # Sorter
 my @sortGuys;
-for (my $i; $i < $numOfSorters; $i++) 
+for (my $i = 0; $i < $numOfSorters; $i++) 
 {
    push @sortGuys, threads->create( \&sorter );
 }
@@ -49,10 +51,11 @@ my $dispatcher = threads->create( \&dispatchJobs );
 
 # loop 
 my $elapsedTime = 0;
+my $sleepTime = 1;
 while ( $primesFound < $PrimesToFind )
 {
-   sleep(1);
-   $elapsedTime ++;
+   sleep($sleepTime);
+   $elapsedTime += $sleepTime;
    print "Prime Numbers Found: $primesFound (", sprintf("%.2f", $primesFound/$elapsedTime) , " pps)\n";
 }
 
@@ -67,58 +70,74 @@ $printerGuy->join();
 close(FILE);
 
 ###################################
-## Subroutines
-###################################
+## SubroutdispatchJobs 
 sub dispatchJobs 
 {
    my @preCachedPrimes = (2, 3, 5, 7, 11, 13, 17, 19); 
 
    map { $sortQueue->enqueue($_) } @preCachedPrimes;
 
+   my $jumpSize = 8092;
    my $candidate = $preCachedPrimes[-1];
    while ( $primesFound < $PrimesToFind )
    {
-      $candidate += 2;
-      if ( substr($candidate, -1) != "5" and $candidate % 3 != 0 )
+      if ( $candidate >= $MaxCandidate )
       {
-         $primeTestersQueue->enqueue( $candidate );
+         threads->exit();
       }
+      async {
+         $primeTestersQueue->enqueue( map { $candidate += 2 } 1..$jumpSize );
+      }->detach();
+      $candidate += ($jumpSize * 2);
+      Time::HiRes::usleep(250000);
    }
 }
 
 sub primeTester
 {
-   while (defined(my $n = $primeTestersQueue->dequeue(1))) 
+   while (my @listToTest = $primeTestersQueue->dequeue(100)) 
    {
-      my $isPrime = 1;
-      my $maxFactor = floor( sqrt($n) );
-      for (my $factor = 2; $factor <= $maxFactor; $factor += 2)
+      my @primes = ();
+      for my $n (@listToTest) 
       {
-         if ($n % $factor == 0)
+         my $isPrime = 1;
+         
+         if ( substr($n, -1) eq "5" )
          {
             $isPrime = 0;
-            break;
+            next;
          }
 
-         # special case to put in 3.
-         $factor-- if ($factor == 2)
-      }
+         my $maxFactor = floor( sqrt($n) );
+         for (my $factor = 2; $factor <= $maxFactor; $factor += 2)
+         {
+            if ($n % $factor == 0)
+            {
+               $isPrime = 0;
+               break;
+            }
 
-      if ( $isPrime )
-      {
-         # The number is prime!
-         $sortQueue->enqueue($n);
-         lock($primesFound);
-         $primesFound++;
+            # special case to put in 3.
+            $factor-- if ($factor == 2)
+         }
+
+         if ( $isPrime )
+         {
+            # The number is prime!
+            lock($primesFound);
+            $primesFound++;
+            push @primes, $n;
+         }
       }
+      $sortQueue->enqueue(@primes);
    }
 }
 
 sub sorter
 {
-   my $bufferSize = 10000;
+   my $bufferSize = 1000;
 
-   while (defined(my @numbers = $sortQueue->dequeue($bufferSize))) 
+   while (my @numbers = $sortQueue->dequeue($bufferSize)) 
    {
       $printerQueue->enqueue( sort { $a > $b } @numbers);
    }
@@ -126,7 +145,7 @@ sub sorter
 
 sub printer
 {
-   while (defined(my $n = $printerQueue->dequeue(1))) 
+   while (defined(my $n = $printerQueue->dequeue(1000))) 
    {
       print FILE "$n\n";
    };
