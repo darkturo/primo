@@ -16,6 +16,7 @@ my $primesFound :shared;
 # Tweak some details. These are for my current machine
 my $CPU = 4;
 my $numOfPrimeTesters = $CPU * 10;
+my $numOfSorters = $CPU * 8; 
 my $PrimesToFind = 2000000;
 
 # Queues
@@ -33,14 +34,18 @@ for (my $i; $i < $numOfPrimeTesters; $i++)
    push @primeTestWorkers, threads->create( \&primeTester );
 }
 
-# Dispatcher
-my $dispatcher = threads->create( \&dispatchJobs );
-
 # Sorter
-my $sortGuy = threads->create( \&sorter );
+my @sortGuys;
+for (my $i; $i < $numOfSorters; $i++) 
+{
+   push @sortGuys, threads->create( \&sorter );
+}
 
 # Printer
 my $printerGuy = threads->create( \&printer );
+
+# Dispatcher
+my $dispatcher = threads->create( \&dispatchJobs );
 
 # loop 
 my $elapsedTime = 0;
@@ -56,7 +61,7 @@ $primeTestersQueue->end() ;
 
 map { $_->join() } @primeTestWorkers; 
 $dispatcher->join();
-$sortGuy->join();
+map { $_->join() } @sortGuys;
 $printerGuy->join();
 
 close(FILE);
@@ -111,20 +116,11 @@ sub primeTester
 
 sub sorter
 {
-   my @buffer = ();
-   my $bufferSize = 1000;
+   my $bufferSize = 10000;
 
-   while (defined(my $n = $sortQueue->dequeue(1))) 
+   while (defined(my @numbers = $sortQueue->dequeue($bufferSize))) 
    {
-      if (@buffer < $bufferSize)
-      {
-         push @buffer, $n;
-      }
-      else
-      {
-         $printerQueue->enqueue( sort { $a > $b } @buffer );
-         @buffer = ();
-      }
+      $printerQueue->enqueue( sort { $a > $b } @numbers);
    }
 }
 
