@@ -8,7 +8,6 @@ use POSIX;
 use threads;
 use threads::shared;
 use Thread::Queue;
-use sort '_quicksort';
 use List::Util qw(first);
 
 no strict 'subs';
@@ -113,7 +112,7 @@ sub primeTester
 sub sorter
 {
    my @buffer = ();
-   my $bufferSize = 500;
+   my $bufferSize = 1000;
 
    while (defined(my $n = $sortQueue->dequeue(1))) 
    {
@@ -123,7 +122,7 @@ sub sorter
       }
       else
       {
-         $printerQueue->enqueue(sort @buffer);
+         $printerQueue->enqueue( sort { $a > $b } @buffer );
          @buffer = ();
       }
    }
