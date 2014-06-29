@@ -16,7 +16,7 @@ my $primesFound :shared;
 
 # Tweak some details. These are for my current machine
 my $CPU = 4;
-my $numOfPrimeTesters = $CPU * 8;
+my $numOfPrimeTesters = $CPU * 10;
 my $PrimesToFind = 2000000;
 
 # Queues
@@ -71,12 +71,14 @@ sub dispatchJobs
 
    map { $sortQueue->enqueue($_) } @preCachedPrimes;
 
-   my $gap = 2; 
-   my $lastPrime = $preCachedPrimes[-1];
+   my $candidate = $preCachedPrimes[-1];
    while ( $primesFound < $PrimesToFind )
    {
-      $lastPrime += $gap;
-      $primeTestersQueue->enqueue( $lastPrime );
+      $candidate += 2;
+      if ( substr($candidate, -1) != "5" and $candidate % 3 != 0 )
+      {
+         $primeTestersQueue->enqueue( $candidate );
+      }
    }
 }
 
@@ -122,8 +124,8 @@ sub sorter
       else
       {
          $printerQueue->enqueue(sort @buffer);
-      };
-      @buffer = ();
+         @buffer = ();
+      }
    }
 }
 
