@@ -6,122 +6,77 @@
 use strict;
 use POSIX;
 use threads;
+use threads::shared;
 use Thread::Queue;
 use sort '_quicksort';
 use List::Util qw(first);
 
 no strict 'subs';
+my $primesFound :shared;
 
 # Tweak some details. These are for my current machine
 my $CPU = 4;
-my $numOfPrimeExplorers = 1; #$CPU * 4;
-my $numOfPrimeTesters = 1; #$CPU * 8;
+my $numOfPrimeTesters = $CPU * 8;
 my $PrimesToFind = 2000000;
 
 # Queues
-my $primeExplorersQueue = Thread::Queue->new();
 my $primeTestersQueue = Thread::Queue->new();
+my $sortQueue = Thread::Queue->new();
 my $printerQueue = Thread::Queue->new();
 
-# Workers
-my @primeExplorerWorkers; 
-my @primeTestWorkers; 
-for (my $i; $i < $numOfPrimeExplorers; $i++) 
-{
-   push @primeExplorerWorkers, threads->create( \&primeExplorer );
-#   my $thr = threads->create( $printPrime );
-}
+# Open the output file.
+open FILE, ">primesEveryWhere.txt";
 
+# Workers
+my @primeTestWorkers; 
 for (my $i; $i < $numOfPrimeTesters; $i++) 
 {
-   push @primeTestWorkers, threads->create( \&primeTester);
+   push @primeTestWorkers, threads->create( \&primeTester );
 }
 
-# Assign some work (starting with number 2)
-$primeExplorersQueue->enqueue(2);
+# Dispatcher
+my $dispatcher = threads->create( \&dispatchJobs );
 
-# The printing work, will be done by this main thread.
-my $primesFound = 0;
-my @buffer = ();
-my @printJobs = ();
-open FILE, ">primesEveryWhere.txt";
-while (defined(my $n = $printerQueue->dequeue(1))) 
+# Sorter
+my $sortGuy = threads->create( \&sorter );
+
+# Printer
+my $printerGuy = threads->create( \&printer );
+
+# loop 
+my $elapsedTime = 0;
+while ( $primesFound < $PrimesToFind )
 {
-   if ($primesFound <= $PrimesToFind)
-   {
-      if (@buffer < 600)
-      {
-         if ( not first {$_ eq $n} @buffer) 
-         {
-print  ">> New prime $n found!\n";
-            $primesFound ++;
-            push @buffer, $n;
-         }
-      }
-      else
-      {
-         @buffer = sort @buffer;
-         push @printJobs, async
-            {
-               for (my $i = 0; $i < 500; $i++)
-               {
-print  ">> print $buffer[$i] into file\n";
-                  print FILE "$buffer[$i]\n";
-               }
-            };
-         @buffer = splice(@buffer, 500);
-      }
-
-      if ($primesFound == $PrimesToFind)
-      {
-         $printerQueue->end(); 
-      }
-   }
-   else
-   {
-      #Stop the train
-      $printerQueue->end(); 
-   }
+   sleep(1);
+   $elapsedTime ++;
+   print "Prime Numbers Found: $primesFound (", sprintf("%.2f", $primesFound/$elapsedTime) , " pps)\n";
 }
 
 # ShutDown
-$primeExplorersQueue->end();
 $primeTestersQueue->end() ;
 
-map { $_->join() } @primeExplorerWorkers; 
 map { $_->join() } @primeTestWorkers; 
-map { $_->join() } @printJobs;
+$dispatcher->join();
+$sortGuy->join();
+$printerGuy->join();
 
 close(FILE);
 
 ###################################
 ## Subroutines
 ###################################
-sub primeExplorer 
+sub dispatchJobs 
 {
-use Data::Dumper;
-   my %switchTable = (2 => 3, 3 => 5, 5 => 7, 7 => 11);
-   while (defined(my $n = $primeExplorersQueue->dequeue(1))) 
-   {
-      # Going to use the conjecture of Firoozbakht to jump between primes. The
-      # conjecture does not apply for the first 4 prime numbers, so I'm
-      # skipping them.
-      if ($n <= 7)
-      {
-         $primeExplorersQueue->enqueue($switchTable{$n});
-         $printerQueue->enqueue($n);
-         next;
-      }
+   my @preCachedPrimes = (2, 3, 5, 7, 11, 13, 17, 19); 
 
-      # Then, I find the Firoozbakht number that ensures to be greater than the
-      # gap between the current number and the next one.
-      my $ln = log($n) ;
-      my $gapBoundary = floor($ln**2 - $ln);
-      
-      for (my $gap = 2; $gap <= $gapBoundary; $gap += 2)
-      {
-         $primeTestersQueue->enqueue($n + $gap);
-      }
+   map { $sortQueue->enqueue($_) } @preCachedPrimes;
+
+   my $gap = 2; 
+   my $lastPrime = $preCachedPrimes[-1];
+   while ( $primesFound < $PrimesToFind )
+   {
+      $lastPrime += $gap;
+      $primeTestersQueue->enqueue( $lastPrime );
    }
 }
 
@@ -146,8 +101,36 @@ sub primeTester
       if ( $isPrime )
       {
          # The number is prime!
-         $primeExplorersQueue->enqueue($n);        
-         $printerQueue->enqueue($n);
+         $sortQueue->enqueue($n);
+         lock($primesFound);
+         $primesFound++;
       }
    }
+}
+
+sub sorter
+{
+   my @buffer = ();
+   my $bufferSize = 500;
+
+   while (defined(my $n = $sortQueue->dequeue(1))) 
+   {
+      if (@buffer < $bufferSize)
+      {
+         push @buffer, $n;
+      }
+      else
+      {
+         $printerQueue->enqueue(sort @buffer);
+      };
+      @buffer = ();
+   }
+}
+
+sub printer
+{
+   while (defined(my $n = $printerQueue->dequeue(1))) 
+   {
+      print FILE "$n\n";
+   };
 }
