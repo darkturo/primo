@@ -45,7 +45,7 @@ class ErasthostenesSieve
       {
          if (listOfNaturals[i])
          {
-            output << i << std::endl;
+            output << i + 1 << std::endl;
             counter ++;
          }
       }
@@ -55,7 +55,7 @@ class ErasthostenesSieve
 
 int main(int argc, char ** argv)
 {
-   const int MaxNumber = 32288611;
+   const int MaxNumber = 32452843;
    time_t t1, t2;
 
 
