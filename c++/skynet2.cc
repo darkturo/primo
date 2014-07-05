@@ -25,20 +25,14 @@ class ErasthostenesSieve
 
    void applyTheSieve()
    {
-      for (int index = 3; index < MaxNumber; index += 2 )
+      for (int base = 2; base * base < MaxNumber; base += 2 )
       {
-         // Mark all even numbers greater than 2 as multiples of 2.
-         // NOTE: listOfNaturals[3] represents 4.
-         listOfNaturals.set(index, false);
-      }
-
-      for (int base = 3; base * base <= MaxNumber; base += 2 )
-      {
-         int jump = 2 * base;
+         int jump = (base == 2)? base : 2 * base;
          for (int pivot = base + jump; pivot <= MaxNumber; pivot += jump)
          {
             listOfNaturals.set(pivot - 1, false);
          }
+         base = (base == 2)? 1 : base;
       }
    }
 
