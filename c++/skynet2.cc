@@ -3,15 +3,17 @@
 #include <fstream>
 #include <ctime>
 #include <limits>
+#include <pthread.h>
 
 template <int MaxNumber>
 class ErasthostenesSieve
 {
    std::bitset<MaxNumber> listOfNaturals;
    std::fstream output;
+   int counter; 
 
    public:
-   ErasthostenesSieve()
+   ErasthostenesSieve() : counter(0)
    {
       listOfNaturals.set();
       listOfNaturals.set(0, false); // 1 is not prime
@@ -23,33 +25,37 @@ class ErasthostenesSieve
       output.close();
    }
 
-   void applyTheSieve()
+   int applyTheSieve()
    {
-      for (int base = 2; base * base < MaxNumber; base += 2 )
+      int base = 2;
+      print( base );
+
+      for (base = 3; base * base < MaxNumber; base += 2 )
       {
-         if (not listOfNaturals[base - 1]) continue;
+         if (not listOfNaturals[base - 1]) 
+            continue;
+
+         print( base );
          
-         int jump = (base == 2)? base : 2 * base;
-         for (int pivot = base + jump; pivot <= MaxNumber; pivot += jump)
+         for (int pivot = 2 * base ; pivot <= MaxNumber; pivot += base)
          {
             listOfNaturals.set(pivot - 1, false);
          }
-         base = (base == 2)? 1 : base;
       }
-   }
 
-   int printPrimes()
-   {
-      int counter = 0;
-      for (int i = 0; i < MaxNumber; i++)
+      for (; base <= MaxNumber; base += 2)
       {
-         if (listOfNaturals[i])
-         {
-            output << i + 1 << std::endl;
-            counter ++;
-         }
+         if (listOfNaturals[base - 1])
+            print( base );
       }
       return counter;
+   }
+
+   private:
+   void print(int number)
+   {
+//      output << number << std::endl;
+      counter ++;
    }
 };
 
@@ -62,8 +68,7 @@ int main(int argc, char ** argv)
    time(&t1);
 
    ErasthostenesSieve<MaxNumber> siever;
-   siever.applyTheSieve();
-   int printedPrimes = siever.printPrimes();
+   int printedPrimes = siever.applyTheSieve();
 
    time(&t2);
 
