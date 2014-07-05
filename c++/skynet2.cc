@@ -9,7 +9,6 @@ class ErasthostenesSieve
 {
    std::bitset<MaxNumber> listOfNaturals;
    std::fstream output;
-   char biggerbuffer[512000 * 8];
 
    public:
    ErasthostenesSieve()
@@ -17,7 +16,6 @@ class ErasthostenesSieve
       listOfNaturals.set();
       listOfNaturals.set(0, false); // 1 is not prime
       output.open("primesEveryWhere.txt", std::fstream::out);
-      output.rdbuf()->pubsetbuf(biggerbuffer, 512000);
    }
 
    ~ErasthostenesSieve()
