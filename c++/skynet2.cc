@@ -27,7 +27,7 @@ class ErasthostenesSieve
 
    void applyTheSieve()
    {
-      for (int index = 3; index <= MaxNumber; index += 2 )
+      for (int index = 3; index < MaxNumber; index += 2 )
       {
          // Mark all even numbers greater than 2 as multiples of 2.
          // NOTE: listOfNaturals[3] represents 4.
