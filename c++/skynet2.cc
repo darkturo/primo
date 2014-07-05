@@ -27,6 +27,8 @@ class ErasthostenesSieve
    {
       for (int base = 2; base * base < MaxNumber; base += 2 )
       {
+         if (not listOfNaturals[base - 1]) continue;
+         
          int jump = (base == 2)? base : 2 * base;
          for (int pivot = base + jump; pivot <= MaxNumber; pivot += jump)
          {
