@@ -42,7 +42,7 @@ class end_of_sieve
    public:
    bool isComposite(int n)
    {
-      return false;
+      return true;
    }
 
    int print()
@@ -66,7 +66,7 @@ class sieve_iterate_rest
 
    int print()
    {
-      typename if_< ((base + 2) <= max),
+      typename if_< ((base + 2) <= max + 2),
                   sieve_iterate_rest<base + 2, max, listOfNaturals>, 
                   end_of_sieve>::result sieve;
       int count = 0;
@@ -89,18 +89,19 @@ class end_of_list
    }
 };
 
-template <int base, int max>
+template <int pivot, int base, int max>
 class sieve_mark_multiples_iter
 {
-   enum { value = base };
+   enum { value = pivot };
    
-   typename if_< (base + 2 * base) <= max,
-              sieve_mark_multiples_iter<base + 2 * base, max>, 
+   typename if_< (pivot + 2 * base) <= max,
+              sieve_mark_multiples_iter<pivot + 2 * base, base, max>, 
               end_of_list >::result multiplesOfBase;
 
    public:
    bool has(int n)
    {
+      //std::cout << "Checking " << n << " (value = " << value << ", base = " << base << ")." << std::endl;
       if ( n == value )
          return true;
       else
@@ -117,7 +118,7 @@ class sieve_mark_multiples
    bool isComposite(int n)
    {
       typename if_< (base + 2 * base) <= max,
-                  sieve_mark_multiples_iter<base + 2 * base, max>, 
+                  sieve_mark_multiples_iter<base + 2 * base, base, max>, 
                   end_of_list >::result multiplesOfBase;
       listOfNaturals naturals;
 
@@ -199,7 +200,7 @@ public:
 int main(int argc, char ** argv)
 {
    //const int max_number = 32288611;
-   const int max_number = 20;
+   const int max_number = 40;
    time_t t1, t2;
 
    time(&t1);
