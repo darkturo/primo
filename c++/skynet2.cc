@@ -6,6 +6,7 @@
 #include <boost/spirit/include/karma.hpp>
 
 #define TIMEDIFF(start, stop) 1000.0 * (stop - start)/CLOCKS_PER_SEC
+#define BUFFER_SIZE 512 
 
 template <int MaxNumber>
 class ErasthostenesSieve
@@ -13,11 +14,14 @@ class ErasthostenesSieve
    std::bitset<MaxNumber> listOfNaturals;
    std::ofstream output;
    int counter; 
+   char buffer[BUFFER_SIZE];
+   char * p_input;
 
    public:
    ErasthostenesSieve() : 
            output("primesEveryWhere.txt", std::ios::out | std::ios::trunc),
-           counter(0)
+           counter(0),
+           p_input(buffer)
    {
       listOfNaturals.set();
       listOfNaturals.set(0, false); // 1 is not prime
@@ -25,6 +29,8 @@ class ErasthostenesSieve
 
    ~ErasthostenesSieve()
    {
+      if (p_input != buffer)
+         output << buffer; //flush
       output.close();
    }
 
@@ -55,13 +61,26 @@ class ErasthostenesSieve
    }
 
    private:
-   void print(int number)
+   inline void print(int number)
    {
-      char buffer[16];
-      char* x = buffer;
-      boost::spirit::karma::generate(x, boost::spirit::int_, number);
-      output << buffer << "\n";
+//      char buffer[16];
+//      char* x = buffer;
+//      boost::spirit::karma::generate(x, boost::spirit::int_, number);
+//      output << buffer << "\n";
+      doPrint(number);
       counter ++;
+   }
+
+   inline void doPrint(int number)
+   {
+      boost::spirit::karma::generate(p_input, boost::spirit::int_, number);
+      *p_input++ = '\n';
+      if (p_input - buffer > BUFFER_SIZE - 16)
+      {
+         output << buffer; 
+         p_input = buffer;
+         memset(buffer, 0u, BUFFER_SIZE);
+      }
    }
 };
 
