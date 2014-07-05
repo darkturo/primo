@@ -56,7 +56,7 @@ class ErasthostenesSieve
    private:
    void print(int number)
    {
-//      output << number << std::endl;
+      output << number << "\n"; 
       counter ++;
    }
 };
