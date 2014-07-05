@@ -1,9 +1,11 @@
 #include <math.h>
 #include <iostream>
 #include <fstream>
+#include <bitset>
 #include <ctime>
 #include <limits>
-#include <pthread.h>
+
+#define TIMEDIFF(start, stop) 1000.0 * (stop - start)/CLOCKS_PER_SEC
 
 template <int MaxNumber>
 class ErasthostenesSieve
@@ -37,7 +39,7 @@ class ErasthostenesSieve
 
          print( base );
          
-         for (int pivot = 2 * base ; pivot <= MaxNumber; pivot += base)
+         for (int pivot = base + base ; pivot <= MaxNumber; pivot += base)
          {
             listOfNaturals.set(pivot - 1, false);
          }
@@ -62,19 +64,18 @@ class ErasthostenesSieve
 int main(int argc, char ** argv)
 {
    const int MaxNumber = 32452843;
-   time_t t1, t2;
+   clock_t t1, t2;
 
-
-   time(&t1);
+   t1 = std::clock();
 
    ErasthostenesSieve<MaxNumber> siever;
    int printedPrimes = siever.applyTheSieve();
 
-   time(&t2);
+   t2 = std::clock();
 
    // Summary
    std::cout.precision(std::numeric_limits<double>::digits10);
-   std::cerr << "Used " << std::fixed << difftime(t2, t1) 
-             << " seconds to calculate " << printedPrimes
+   std::cerr << "Used " << std::fixed << TIMEDIFF(t1, t2)
+             << " msecs to calculate " << printedPrimes
              << " primes." << std::endl;
 }
