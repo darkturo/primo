@@ -1,5 +1,8 @@
 #include <math.h>
 #include <iostream>
+#include <ctime>
+#include <limits>
+
 #define MID(a, b) ((a+b)/2)
 #define POW(a) (a*a)
 
@@ -18,6 +21,22 @@ struct SQRT {
                                 (POW(MID(r, l)) >= res ? MID(r, l) : r)>::value;
 };
 
+template <bool Condition, typename TrueResult, typename FalseResult>
+struct if_;
+ 
+template <typename TrueResult, typename FalseResult>
+struct if_<true, TrueResult, FalseResult>
+{
+   typedef TrueResult result;
+};
+ 
+template <typename TrueResult, typename FalseResult>
+struct if_<false, TrueResult, FalseResult>
+{
+   typedef FalseResult result;
+};
+/////////////////
+ 
 class end_of_sieve
 {
    public:
@@ -26,9 +45,10 @@ class end_of_sieve
       return false;
    }
 
-   void print()
+   int print()
    {
-      std::cerr << "Hasta la vista, baby" << std::endl;
+      /* done! */
+      return 0;
    }
 };
 
@@ -38,15 +58,25 @@ class sieve_iterate_rest
    enum { value = base };
    
    public:
-   void print()
+   bool isComposite(int n)
    {
-      if_ < (base + 2) <= max,
-            sieve_iterate_rest<base + 2, max>, 
-            end_of_sieve> sieve;
+      listOfNaturals N;
+      return N.isComposite(n);
+   }
 
-      if ( not sieve.isComposite(base) )
-         std::cout << value << endl;
-      sieve.print();
+   int print()
+   {
+      typename if_< ((base + 2) <= max),
+                  sieve_iterate_rest<base + 2, max, listOfNaturals>, 
+                  end_of_sieve>::result sieve;
+      int count = 0;
+
+      if ( not sieve.isComposite(base) ) 
+      {
+         std::cout << value << std::endl;
+         count ++;
+      }
+      return count + sieve.print();
    }
 };
 
@@ -64,9 +94,9 @@ class sieve_mark_multiples_iter
 {
    enum { value = base };
    
-   if_ < (base + 2 * base) < max,
-        sieve_mark_multiples_iter<base + 2 * base, max>, 
-        end_of_list > multiplesOfBase;
+   typename if_< (base + 2 * base) <= max,
+              sieve_mark_multiples_iter<base + 2 * base, max>, 
+              end_of_list >::result multiplesOfBase;
 
    public:
    bool has(int n)
@@ -86,9 +116,10 @@ class sieve_mark_multiples
    public:
    bool isComposite(int n)
    {
-      if_ < (base + 2 * base) <= max,
-            sieve_mark_multiples_iter<base + 2 * base, max>, 
-            end_of_list > multiplesOfBase;
+      typename if_< (base + 2 * base) <= max,
+                  sieve_mark_multiples_iter<base + 2 * base, max>, 
+                  end_of_list >::result multiplesOfBase;
+      listOfNaturals naturals;
 
       if ( n == value )
          return false;
@@ -96,12 +127,12 @@ class sieve_mark_multiples
          if ( multiplesOfBase.has(n) )
             return true;
          else
-            return listOfNaturals.isComposite(n);
+            return naturals.isComposite(n);
    }
 };
 
 template <int max, typename listOfNaturals>
-class sieve_mark_multiples<2>
+class sieve_mark_multiples<2, max, listOfNaturals>
 {
    public:
    bool isComposite(int n)
@@ -114,46 +145,71 @@ template <int base, int sqrt, int max, typename listOfNaturals>
 class sieve_explore
 {
    enum { value = base };
-   if_< base <= sqrt, 
-        sieve_explore<base + 2, sqrt, max, sieve_mark_multiples<base, max, listOfNaturals> >
-        sieve_iterate_rest<base + 2, max, listOfNaturals> > sieve;
+   typename if_< base <= sqrt, 
+               sieve_explore<base + 2, sqrt, max, sieve_mark_multiples<base, max, listOfNaturals> >,
+               sieve_iterate_rest<base + 2, max, listOfNaturals> >::result sieve;
 
    public:
-   void print()
+   int print()
    {
-      if ( not sieve.isComposite(base) )
-         std::cout << value << endl;
-      sieve.print();
+      listOfNaturals N;
+      int count = 0;
+
+      if ( not N.isComposite(base) )
+      {
+         std::cout << value << std::endl;
+         count++;
+      }
+      return count + sieve.print();
    }
 };
 
 template <int sqrt, int max, typename listOfNaturals>
-class sieve_explore<2>
+class sieve_explore<2, sqrt, max, listOfNaturals>
 {
    enum { value = 2 };
-   sieve_explore<3, sqrt, max, sieve_mark_multiples<2, max, listOfNaturals> > sieve;
+   typename if_< value <= sqrt, 
+               sieve_explore<value + 1, sqrt, max, sieve_mark_multiples<2, max, listOfNaturals> >,
+               sieve_iterate_rest<value + 1, max, listOfNaturals> >::result sieve;
    public:
-   void print()
+   int print()
    {
-      std::cout << 2 << endl;
-      sieve.print();
+      std::cout << value << std::endl;
+      int count = 1;
+      if (max > value) 
+         count += sieve.print();
+      return count;
    }
 };
 
 template <int n>
-class erasthostenes {
+class erasthostenes_t {
 public:
-   void sieve() 
+   int sieve() 
    {
-      sieve_explore<2, SQRT(n), n, end_of_sieve> sieve;
-      sieve.print();
+      if (n > 1)
+      {
+         sieve_explore<2, SQRT<n>::value, n, end_of_sieve> sieve;
+         return sieve.print();
+      }
+      return 0;
    }
 };
 
 int main(int argc, char ** argv)
 {
-   const int max_number = 32288611;
+   //const int max_number = 32288611;
+   const int max_number = 20;
+   time_t t1, t2;
 
-   erasthostenes<max_number> Erasthostenes;
-   Erasthostenes::sieve();
+   time(&t1);
+
+   erasthostenes_t<max_number> Erasthostenes;
+   int calculatedPrimes = Erasthostenes.sieve();
+
+   time(&t2);
+   std::cout.precision(std::numeric_limits<double>::digits10);
+   std::cerr << "Used " << std::fixed << difftime(t2, t1) 
+             << " seconds to calculate " << calculatedPrimes
+             << " primes." << std::endl;
 }
