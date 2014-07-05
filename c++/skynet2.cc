@@ -1,9 +1,9 @@
-#include <math.h>
 #include <iostream>
 #include <fstream>
 #include <bitset>
 #include <ctime>
 #include <limits>
+#include <boost/spirit/include/karma.hpp>
 
 #define TIMEDIFF(start, stop) 1000.0 * (stop - start)/CLOCKS_PER_SEC
 
@@ -11,15 +11,16 @@ template <int MaxNumber>
 class ErasthostenesSieve
 {
    std::bitset<MaxNumber> listOfNaturals;
-   std::fstream output;
+   std::ofstream output;
    int counter; 
 
    public:
-   ErasthostenesSieve() : counter(0)
+   ErasthostenesSieve() : 
+           output("primesEveryWhere.txt", std::ios::out | std::ios::trunc),
+           counter(0)
    {
       listOfNaturals.set();
       listOfNaturals.set(0, false); // 1 is not prime
-      output.open("primesEveryWhere.txt", std::fstream::out);
    }
 
    ~ErasthostenesSieve()
@@ -56,7 +57,10 @@ class ErasthostenesSieve
    private:
    void print(int number)
    {
-      output << number << "\n"; 
+      char buffer[16];
+      char* x = buffer;
+      boost::spirit::karma::generate(x, boost::spirit::int_, number);
+      output << buffer << "\n";
       counter ++;
    }
 };
