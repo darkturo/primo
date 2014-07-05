@@ -30,7 +30,7 @@ class ErasthostenesSieve
    ~ErasthostenesSieve()
    {
       if (p_input != buffer)
-         output << buffer; //flush
+         output.write(buffer, p_input - buffer);  // flush
       output.close();
    }
 
@@ -63,10 +63,6 @@ class ErasthostenesSieve
    private:
    inline void print(int number)
    {
-//      char buffer[16];
-//      char* x = buffer;
-//      boost::spirit::karma::generate(x, boost::spirit::int_, number);
-//      output << buffer << "\n";
       doPrint(number);
       counter ++;
    }
@@ -77,7 +73,7 @@ class ErasthostenesSieve
       *p_input++ = '\n';
       if (p_input - buffer > BUFFER_SIZE - 16)
       {
-         output << buffer; 
+         output.write(buffer, p_input - buffer); 
          p_input = buffer;
          memset(buffer, 0u, BUFFER_SIZE);
       }
