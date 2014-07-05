@@ -200,7 +200,7 @@ public:
 int main(int argc, char ** argv)
 {
    //const int max_number = 32288611;
-   const int max_number = 40;
+   const int max_number = 50000;
    time_t t1, t2;
 
    time(&t1);
