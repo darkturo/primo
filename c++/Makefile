@@ -1,10 +1,10 @@
-all: skynet2 
+all: heisenberg
 
 skynet: skynet.cc
 	g++ -Wall -ftemplate-depth-2000000 -ftemplate-backtrace-limit=0 -o $@ $@.cc
 
-skynet2: skynet2.cc
-	g++ -O3 -Wall -o $@ $@.cc
+heisenberg: heisenberg.cc
+	g++ -O3 -Wall -o $@ $<
 
 clean: 
-	rm -f skynet skynet2
+	rm -f skynet skynet2 heisenberg
