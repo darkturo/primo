@@ -29,10 +29,11 @@ class ErasthostenesSieve
    int counter; 
 #ifdef __Darwin__
    char buffer[BUFFER_SIZE];
-   char * p_input;
 #else
    char * p_map;
+   int output_fd;
 #endif
+   char * p_input;
 
    public:
    ErasthostenesSieve() : 
