@@ -1,3 +1,7 @@
+/*
+ * Using Erasthostenes' sieve, print the first 2,000,000 numbers
+ * darkturo 2014
+ */
 #include <iostream>
 #include <fstream>
 #include <bitset>
