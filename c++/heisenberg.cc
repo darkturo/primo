@@ -18,14 +18,20 @@ class ErasthostenesSieve
    std::bitset<MaxNumber> listOfNaturals;
    std::ofstream output;
    int counter; 
+#ifdef __Darwin__
    char buffer[BUFFER_SIZE];
    char * p_input;
+#endif
 
    public:
    ErasthostenesSieve() : 
            output("primesEveryWhere.txt", std::ios::out | std::ios::trunc),
+#ifdef __Darwin__
            counter(0),
            p_input(buffer)
+#else
+           counter(0)
+#endif
    {
       listOfNaturals.set();
       listOfNaturals.set(0, false); // 1 is not prime
@@ -33,8 +39,10 @@ class ErasthostenesSieve
 
    ~ErasthostenesSieve()
    {
+#ifdef __Darwin__
       if (p_input != buffer)
          output.write(buffer, p_input - buffer);  // flush
+#endif
       output.close();
    }
 
@@ -71,10 +79,12 @@ class ErasthostenesSieve
       counter ++;
    }
 
+#ifdef __Darwin__
    inline void doPrint(int number)
    {
       boost::spirit::karma::generate(p_input, boost::spirit::int_, number);
       *p_input++ = '\n';
+
       if (p_input - buffer > BUFFER_SIZE - 8)
       {
          output.write(buffer, p_input - buffer); 
@@ -82,6 +92,16 @@ class ErasthostenesSieve
          memset(buffer, 0u, BUFFER_SIZE);
       }
    }
+#else
+   inline void doPrint(int number)
+   {
+      char buffer[16];
+      memset(buffer, 0u, sizeof(buffer));
+      char * x = buffer;
+      boost::spirit::karma::generate(x, boost::spirit::int_, number);
+      output << buffer << "\n";
+   }
+#endif
 };
 
 int main(int argc, char ** argv)
