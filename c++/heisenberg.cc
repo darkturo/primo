@@ -84,7 +84,7 @@ class ErasthostenesSieve
       *p_input++ = '\n';
 #endif
 
-      if (p_input - buffer > BUFFER_SIZE - 16)
+      if (p_input - buffer > BUFFER_SIZE - 8)
       {
          output.write(buffer, p_input - buffer); 
          p_input = buffer;
