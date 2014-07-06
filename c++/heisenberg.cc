@@ -71,7 +71,7 @@ class ErasthostenesSieve
    {
       boost::spirit::karma::generate(p_input, boost::spirit::int_, number);
       *p_input++ = '\n';
-      if (p_input - buffer > BUFFER_SIZE - 16)
+      if (p_input - buffer > BUFFER_SIZE - 8)
       {
          output.write(buffer, p_input - buffer); 
          p_input = buffer;
