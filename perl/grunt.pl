@@ -10,22 +10,18 @@ my $PrimeDensity = 0.0619413; # Is not really a true density, just the division
 my $SearchSpaceSize = 32452843;
 
 # Premark 1, and all the even numbers
-my $N = "01" . "10" x ($SearchSpaceSize/2);
+my $N = "011" . "010100" x ($SearchSpaceSize/6);
 
 # Sieve
-for (my $i = 3; $i < sqrt($SearchSpaceSize); $i += 2)
+for (my $i = 5; $i < sqrt($SearchSpaceSize); $i += 2)
 {
-   for (my $j = 2 * $i - 1; $j < $SearchSpaceSize; $j += $i)
-   {
-      $N =~ s/^(.{$j})\K./0/
-   }
+   my $j = $i - 1;
+   pos($N) = $i;
+   $N =~ s/\G.{$j}\K./0/g;
 }
 
-my ($number, $counter) = (0, 0);
+# print yeah
+$N =~ s/\G(?{$n++})(.)(?:(?<=1(?{$prim="$n\n"}))|(?<=0(?{undef $prim})))/$prim/g;
 open OUTPUT, ">primesEveryWhere.txt";
-while ($N =~ m/(.)/g and $counter < $MaxPrimes)
-{
-   $number ++;
-   print OUTPUT $number,"\n" and $counter++ if ($1 eq '1');
-}
+print OUTPUT substr($N, 0, $MaxPrimes), "\n";
 close OUTPUT;
