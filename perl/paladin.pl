@@ -15,14 +15,14 @@ for ($i = 2; $i < sqrt($LASTPRIME); $i += ($i == 2? 1 : 2))
    if ( $N[$i] ) 
    {
       print FILE "$i\n";
-      for (my $j = $i + $i; $j < $LASTPRIME; $j += $i )
+      for (my $j = $i + $i; $j <= $LASTPRIME; $j += $i )
       {
          $N[$j] = 0;
       }
    }
 }
 
-for (; $i < $LASTPRIME; $i += 2)
+for (; $i <= $LASTPRIME; $i += 2)
 {
    if ( $N[$i] ) 
    {
