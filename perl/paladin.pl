@@ -3,13 +3,16 @@
 # Erasthostenes sieve in perl to calculate 2000000
 # darkturo 2014
 my $LASTPRIME = 32452843;
-my @N = ((0, 0, 1, 1), (0, 1, 0, 1, 0, 0) x ($LASTPRIME/6));
+my @N = ((0, 0, 1, 1, 0, 1, 0, 1), 
+         (0, 0, 0, 1, 0, 1, 0, 0, 
+          0, 1, 0, 1, 0, 0, 0, 1, 
+          0, 0, 0, 0, 0, 1, 0, 1, 
+          0, 0, 0, 0, 0, 1) x ($LASTPRIME/30 + 2));
 
-open FILE, ">primesEveryWhere.txt";
-
-print FILE "2\n3\n";
 my $i;
-for ($i = 5; $i < sqrt($LASTPRIME); $i += 2)
+open FILE, ">primesEveryWhere.txt";
+print FILE "2\n3\n5\n";
+for ($i = 7; $i < sqrt($LASTPRIME); $i += 2)
 {
    if ( $N[$i] ) 
    {
