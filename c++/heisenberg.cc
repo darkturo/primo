@@ -19,7 +19,8 @@
 #endif
 
 #define TIMEDIFF(start, stop) 1000.0 * (stop - start)/CLOCKS_PER_SEC
-#define BUFFER_SIZE 512 
+#define MAXNUMBER 32452843
+#define BUFFER_SIZE 8l * MAXNUMBER 
 
 template <int MaxNumber>
 class ErasthostenesSieve
@@ -28,7 +29,7 @@ class ErasthostenesSieve
    std::ofstream output;
    int counter; 
 #ifdef __Darwin__
-   char buffer[BUFFER_SIZE];
+   char * buffer;
    char * p_input;
 #else
    char * p_map;
@@ -38,16 +39,16 @@ class ErasthostenesSieve
    ErasthostenesSieve() : 
 #ifdef __Darwin__
            output("primesEveryWhere.txt", std::ios::out | std::ios::trunc),
-           counter(0),
-           p_input(buffer)
-#else
-           counter(0)
 #endif
+           counter(0)
    {
       listOfNaturals.set();
       listOfNaturals.set(0, false); // 1 is not prime
 
-#ifdef __Linux__
+#ifdef __Darwin__
+      buffer = new char[BUFFER_SIZE];
+      p_input = buffer;
+#else
       output_fd = open("primesEveryWhere.txt", O_RDWR | O_CREAT | O_TRUNC, (mode_t)0664);
       lseek(output_fd, FILESIZE-1, SEEK_SET);
       write(output_fd, "", 1);
@@ -106,13 +107,6 @@ class ErasthostenesSieve
    {
       boost::spirit::karma::generate(p_input, boost::spirit::int_, number);
       *p_input++ = '\n';
-
-      if (p_input - buffer > BUFFER_SIZE - 8)
-      {
-         output.write(buffer, p_input - buffer); 
-         p_input = buffer;
-         memset(buffer, 0u, BUFFER_SIZE);
-      }
    }
 #else
    inline void print(int number)
