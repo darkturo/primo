@@ -42,7 +42,7 @@ class SundaramSieve
    void sieve()
    {
       print( 2 );
-      for (long i = 1; (2*i + 2*(i^2)) <= 2*sqrt(MAX) - 1000; i++)
+      for (long i = 1; (2*i + 2*(i^2)) <= 2*sqrt(MAX); i++)
       {
          for (long j = i; (i + j + 2*i*j) <= (MAX - 2)/2; j++)
          {
