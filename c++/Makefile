@@ -3,7 +3,7 @@ ifndef _ARCH
    export _ARCH
 endif 
 
-all: heisenberg sundaram meteoro
+all: heisenberg sundaram meteoro 
 
 skynet: skynet.cc
 	g++ -Wall -ftemplate-depth-2000000 -ftemplate-backtrace-limit=0 -o $@ $@.cc
@@ -16,6 +16,11 @@ sundaram: sundaram.cc
 
 meteoro: meteoro.cc
 	g++ -std=c++11 -m64 -D$(_ARCH) -O3 -Wall -o $@ $< 
+
+benchmark:
+	perl -MBenchmark -e 'timethese(20, {heisenberg => q(system("./heisenberg")), \
+			  										sundaram => q(system("./sundaram")), \
+													meteoro => q(system("./meteoro"))})'
 
 clean: 
 	rm -f skynet skynet2 heisenberg meteoro sundaram
