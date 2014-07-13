@@ -3,7 +3,7 @@ ifndef _ARCH
    export _ARCH
 endif 
 
-all: heisenberg sundaram
+all: heisenberg sundaram meteoro
 
 skynet: skynet.cc
 	g++ -Wall -ftemplate-depth-2000000 -ftemplate-backtrace-limit=0 -o $@ $@.cc
@@ -14,5 +14,8 @@ heisenberg: heisenberg.cc
 sundaram: sundaram.cc
 	g++ -m64 -D$(_ARCH) -O3 -Wall -o $@ $< 
 
+meteoro: meteoro.cc
+	g++ -std=c++11 -m64 -D$(_ARCH) -O3 -Wall -o $@ $< 
+
 clean: 
-	rm -f skynet skynet2 heisenberg
+	rm -f skynet skynet2 heisenberg meteoro sundaram
