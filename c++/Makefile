@@ -18,9 +18,9 @@ meteoro: meteoro.cc
 	g++ -std=c++11 -m64 -D$(_ARCH) -O3 -Wall -o $@ $< 
 
 benchmark:
-	perl -MBenchmark -e 'timethese(20, {heisenberg => q(system("./heisenberg")), \
-			  										sundaram => q(system("./sundaram")), \
-													meteoro => q(system("./meteoro"))})'
+	nice - 20 perl -MBenchmark -e 'timethese(20, {heisenberg => q(system("./heisenberg")), \
+			  													 sundaram => q(system("./sundaram")), \
+																 meteoro => q(system("./meteoro"))})'
 
 clean: 
 	rm -f skynet skynet2 heisenberg meteoro sundaram
