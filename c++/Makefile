@@ -14,8 +14,9 @@ heisenberg: heisenberg.cc
 sundaram: sundaram.cc
 	g++ -m64 -D$(_ARCH) -O3 -Wall -o $@ $< 
 
-meteoro: meteoro.cc
-	g++ -std=c++11 -m64 -D$(_ARCH) -O3 -Wall -o $@ $< 
+meteoro: meteoro.cc 
+	g++ -o format.o -c cppformat/format.cc 
+	g++ -std=c++11 -m64 -D$(_ARCH) -O3 -ftree-vectorize -msse2 -Wall -o $@ $< format.o
 
 benchmark:
 	nice -20 perl -MBenchmark -e 'timethese(20, {heisenberg => q(system("./heisenberg")), \

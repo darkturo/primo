@@ -8,7 +8,9 @@
 #include <ctime>
 #include <limits>
 #include <future>
-#include <boost/spirit/include/karma.hpp>
+#include <cmath>
+#include <cstring>
+#include "cppformat/format.h"
 
 #define TIMEDIFF(start, stop) 1000.0 * (stop - start)/CLOCKS_PER_SEC
 #define MAX 32452843
@@ -49,7 +51,7 @@ class SundaramSieve
       {
          if (thrcnt < maxthr) 
          {
-            std::async(inner_loop, &N, i);
+            std::async(std::launch::async, inner_loop, &N, i);
             thrcnt++;
          }
          else
@@ -90,7 +92,9 @@ class SundaramSieve
 
    inline void doPrint(int number)
    {
-      boost::spirit::karma::generate(p_input, boost::spirit::int_, number);
+      fmt::FormatInt fastFormatter(number);
+      strcpy(p_input, fastFormatter.c_str());
+      p_input += fastFormatter.size();
       *p_input++ = '\n';
    }
 };
