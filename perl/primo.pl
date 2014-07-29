@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 #
-# Find the first 2,000,000 prime numbers. 
-# To test the primality I'm using Eratosthenes Sieve.
+# Find the first 2,000,000 prime numbers, using trial division. 
 # 
 # darkturo 2014.
 use strict;
