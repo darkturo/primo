@@ -41,7 +41,8 @@ class SundaramSieve
 
    void sieve()
    {
-      print( 2 );
+      // Given i,j ∈ ℕ, 1 ≤ i ≤ j
+      // Sieve all the x ∈ ℕ, x = i + j + 2ij ≤ MAX
       for (long i = 1; (2*i + 2*(i^2)) <= 2*sqrt(MAX); i++)
       {
          for (long j = i; (i + j + 2*i*j) <= (MAX - 2)/2; j++)
@@ -50,6 +51,8 @@ class SundaramSieve
          }
       }
 
+      // Generate the primes from the sieved list.
+      print( 2 );
       for (int i = 1; counter < MAXPRIMES; i++)
       {
          if (N[i-1]) 
